@@ -1,5 +1,6 @@
 import csv
 import re
+from collections import Counter
 
 def is_us_city(city):
     # Check if the city has a valid US state code
@@ -12,8 +13,8 @@ def is_us_city(city):
     ])
     return city.upper() in us_state_codes
 
-def count_us_cities(csv_file):
-    unique_us_cities = set()  # Set to store unique US city names
+def count_businesses_by_city(csv_file):
+    city_business_counts = Counter()  # Counter to store counts for each city
 
     with open(csv_file, 'r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
@@ -21,11 +22,22 @@ def count_us_cities(csv_file):
             city = row.get('city')  # Assuming 'city' is the column name for cities
             state = row.get('state')  # Assuming 'state' is the column name for state codes
             if city and state and is_us_city(state):
-                unique_us_cities.add(city.lower())  # Convert to lowercase for case-insensitive comparison
+                # Convert to lowercase for case-insensitive comparison
+                city = city.lower()
+                # Increment the count for the city
+                city_business_counts[city] += 1
 
-    return len(unique_us_cities)
+    return city_business_counts
 
 if __name__ == "__main__":
     csv_file_path = 'output-allcities.csv'  # Replace with the actual path to your CSV file
-    unique_us_city_count = count_us_cities(csv_file_path)
-    print(f'Total unique US cities: {unique_us_city_count}')
+    city_business_counts = count_businesses_by_city(csv_file_path)
+
+    # Print the total number of unique US cities
+    total_us_cities = len(city_business_counts)
+    print(f'Total unique US cities: {total_us_cities}')
+
+    # Sort and print the city counts in descending order
+    sorted_city_counts = dict(sorted(city_business_counts.items(), key=lambda item: item[1], reverse=True))
+    for city, count in sorted_city_counts.items():
+        print(f'City: {city}, Number of Businesses: {count}')
